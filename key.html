@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSANGI JR Secret Key Generator</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --light-color: #f3f4f6;
+            --dark-color: #1f2937;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 2rem 0;
+            color: white;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .key-generator-container {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .key-generator-container:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0));
+            border-radius: 0 0 0 100%;
+            z-index: 0;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            color: var(--dark-color);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-control:focus, .form-select:focus, .form-check-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .result-container {
+            background-color: var(--light-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .result-container.highlight {
+            background-color: #e0f2fe;
+            border: 1px solid var(--info-color);
+            animation: pulse 1.5s;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        
+        .key-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            letter-spacing: 1px;
+            padding: 0.75rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
+            word-break: break-all;
+            user-select: all;
+            cursor: pointer;
+        }
+        
+        .key-display:hover {
+            background-color: #f8fafc;
+        }
+        
+        .strength-meter {
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            background-color: #e2e8f0;
+            overflow: hidden;
+        }
+        
+        .strength-meter-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            transition: width 0.5s ease, background-color 0.5s ease;
+        }
+        
+        .strength-meter-fill.weak {
+            background-color: var(--danger-color);
+        }
+        
+        .strength-meter-fill.medium {
+            background-color: var(--warning-color);
+        }
+        
+        .strength-meter-fill.strong {
+            background-color: var(--success-color);
+        }
+        
+        .slider-container {
+            padding: 0 0.5rem;
+        }
+        
+        .custom-range::-webkit-slider-thumb {
+            background: var(--primary-color);
+        }
+        
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--dark-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1050;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .toast-notification.show {
+            opacity: 1;
+        }
+        
+        .key-history {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        
+        .history-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-key {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 60%;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .prefix-highlight {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        @media (max-width: 576px) {
+            .key-display {
+                font-size: 1rem;
+                padding: 0.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.25rem;
+            }
+            
+            .key-generator-container {
+                padding: 1.5rem;
+            }
+            
+            .btn-icon {
+                padding: 0.25rem 0.5rem;
+            }
+            
+            .history-key {
+                max-width: 40%;
+            }
+        }
+        
+        .btn-copy {
+            position: relative;
+        }
+        
+        .tooltip-text {
+            visibility: hidden;
+            width: 120px;
+            background-color: var(--dark-color);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--dark-color) transparent transparent transparent;
+        }
+
+        .btn-copy:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        footer {
+            margin-top: auto;
+            background-color: var(--dark-color);
+            color: white;
+            padding: 1.5rem 0;
+        }
+    </style>
+</head>
+<body>
+
+<header class="header-section">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold">MSANGI JR Key Generator</h1>
+        <p class="lead">Generate secure access keys for your document portal</p>
+    </div>
+</header>
+
+<div class="container mb-4">
+    <div class="key-generator-container">
+        <h2 class="section-title">Access Key Generator</h2>
+        
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label for="keyLength" class="form-label">Key Length (8-32 characters)</label>
+                <div class="slider-container">
+                    <input type="range" class="form-range custom-range" id="keyLength" min="8" max="32" value="16">
+                    <div class="d-flex justify-content-between mt-1">
+                        <span>8</span>
+                        <span>16</span>
+                        <span>24</span>
+                        <span>32</span>
+                    </div>
+                </div>
+                <div class="text-center mt-1">
+                    <span id="lengthValue">16</span> characters
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label">Include Characters</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="includeUppercase" checked>
+                    <label class="form-check-label" for="includeUppercase">
+                        Uppercase Letters (A-Z)
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="includeLowercase" checked>
+                    <label class="form-check-label" for="includeLowercase">
+                        Lowercase Letters (a-z)
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="includeNumbers" checked>
+                    <label class="form-check-label" for="includeNumbers">
+                        Numbers (0-9)
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="includeSymbols">
+                    <label class="form-check-label" for="includeSymbols">
+                        Special Characters (!@#$%^&*)
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-grid gap-2 col-md-8 mx-auto">
+            <button id="generateBtn" class="btn btn-primary btn-lg">
+                <i class="fas fa-key me-2"></i> Generate New Key
+            </button>
+        </div>
+        
+        <div id="resultContainer" class="result-container d-none">
+            <h5 class="mb-3"><i class="fas fa-shield-alt me-2"></i> Your Secure Access Key</h5>
+            
+            <div class="strength-meter mb-2">
+                <div id="strengthMeter" class="strength-meter-fill"></div>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+                <small id="strengthText">Password Strength</small>
+                <small id="entropyText">Entropy: 0 bits</small>
+            </div>
+            
+            <div id="keyDisplay" class="key-display"></div>
+            
+            <div class="d-flex flex-wrap gap-2">
+                <button id="copyBtn" class="btn btn-outline-primary btn-copy">
+                    <i class="fas fa-copy me-2"></i> Copy to Clipboard
+                    <span class="tooltip-text" id="copyTooltip">Copy to clipboard</span>
+                </button>
+                <button id="regenerateBtn" class="btn btn-outline-primary">
+                    <i class="fas fa-sync-alt me-2"></i> Regenerate
+                </button>
+                <button id="saveBtn" class="btn btn-outline-success">
+                    <i class="fas fa-save me-2"></i> Save Key
+                </button>
+            </div>
+        </div>
+        
+        <div id="savedKeysContainer" class="mt-4 d-none">
+            <h5 class="mb-3"><i class="fas fa-history me-2"></i> Saved Keys</h5>
+            <div id="keyHistory" class="key-history">
+                <!-- Saved keys will appear here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>MSANGI JR</h5>
+                <p>Professional key generation service</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p>&copy; 2025 MSANGI JR. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<div id="toastNotification" class="toast-notification">
+    <div class="d-flex align-items-center">
+        <i id="toastIcon" class="fas fa-check-circle me-2"></i>
+        <span id="toastMessage">Operation successful</span>
+    </div>
+</div>
+
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    // DOM Elements
+    const keyLengthSlider = document.getElementById('keyLength');
+    const lengthValue = document.getElementById('lengthValue');
+    const includeUppercase = document.getElementById('includeUppercase');
+    const includeLowercase = document.getElementById('includeLowercase');
+    const includeNumbers = document.getElementById('includeNumbers');
+    const includeSymbols = document.getElementById('includeSymbols');
+    const generateBtn = document.getElementById('generateBtn');
+    const resultContainer = document.getElementById('resultContainer');
+    const keyDisplay = document.getElementById('keyDisplay');
+    const strengthMeter = document.getElementById('strengthMeter');
+    const strengthText = document.getElementById('strengthText');
+    const entropyText = document.getElementById('entropyText');
+    const copyBtn = document.getElementById('copyBtn');
+    const regenerateBtn = document.getElementById('regenerateBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const savedKeysContainer = document.getElementById('savedKeysContainer');
+    const keyHistory = document.getElementById('keyHistory');
+    const toastNotification = document.getElementById('toastNotification');
+    const toastIcon = document.getElementById('toastIcon');
+    const toastMessage = document.getElementById('toastMessage');
+    const copyTooltip = document.getElementById('copyTooltip');
+    
+    // Constants
+    const PREFIX = "MSANGI JR-";
+    const UPPERCASE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const LOWERCASE_CHARS = 'abcdefghijklmnopqrstuvwxyz';
+    const NUMBER_CHARS = '0123456789';
+    const SYMBOL_CHARS = '!@#$%^&*_-+=';
+    
+    // Saved keys array
+    let savedKeys = JSON.parse(localStorage.getItem('msangiSavedKeys')) || [];
+    
+    // Update UI based on slider value
+    keyLengthSlider.addEventListener('input', () => {
+        lengthValue.textContent = keyLengthSlider.value;
+    });
+    
+    // Generate key on button click
+    generateBtn.addEventListener('click', generateKey);
+    
+    // Regenerate key
+    regenerateBtn.addEventListener('click', generateKey);
+    
+    // Copy key to clipboard
+    copyBtn.addEventListener('click', copyToClipboard);
+    
+    // Save key
+    saveBtn.addEventListener('click', saveKey);
+    
+    // Initialize
+    function init() {
+        // Set up event listeners for checkboxes
+        const checkboxes = [includeUppercase, includeLowercase, includeNumbers, includeSymbols];
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', () => {
+                // Ensure at least one checkbox is checked
+                if (!includeUppercase.checked && !includeLowercase.checked && 
+                    !includeNumbers.checked && !includeSymbols.checked) {
+                    cb.checked = true;
+                    showToast('warning', 'At least one character type must be selected!');
+                }
+            });
+        });
+        
+        // Load saved keys
+        updateSavedKeysUI();
+        
+        // Generate initial key
+        generateKey();
+    }
+    
+    // Generate a secure key
+    function generateKey() {
+        // Get the length value from slider (adjusted for PREFIX)
+        const prefixLength = PREFIX.length;
+        let keyLength = parseInt(keyLengthSlider.value);
+        
+        // Build character set based on selections
+        let charset = '';
+        if (includeUppercase.checked) charset += UPPERCASE_CHARS;
+        if (includeLowercase.checked) charset += LOWERCASE_CHARS;
+        if (includeNumbers.checked) charset += NUMBER_CHARS;
+        if (includeSymbols.checked) charset += SYMBOL_CHARS;
+        
+        // Generate random key (without prefix yet)
+        let key = '';
+        let actualLength = keyLength - prefixLength;
+        
+        // Ensure we have at least some characters to generate
+        if (actualLength < 1) actualLength = 1;
+        
+        // Generate random string
+        for (let i = 0; i < actualLength; i++) {
+            const randomIndex = Math.floor(Math.random() * charset.length);
+            key += charset[randomIndex];
+        }
+        
+        // Add prefix to the key
+        const fullKey = PREFIX + key;
+        
+        // Display the key with prefix highlighted
+        keyDisplay.innerHTML = `<span class="prefix-highlight">${PREFIX}</span>${key}`;
+        
+        // Calculate and update strength indicators
+        updateStrengthIndicators(fullKey);
+        
+        // Show the result container
+        resultContainer.classList.remove('d-none');
+        resultContainer.classList.add('highlight');
+        
+        // Remove highlight after animation
+        setTimeout(() => {
+            resultContainer.classList.remove('highlight');
+        }, 1500);
+    }
+    
+    // Calculate password strength and entropy
+    function updateStrengthIndicators(password) {
+        // Calculate password entropy
+        let charsetSize = 0;
+        if (includeUppercase.checked) charsetSize += 26;
+        if (includeLowercase.checked) charsetSize += 26;
+        if (includeNumbers.checked) charsetSize += 10;
+        if (includeSymbols.checked) charsetSize += SYMBOL_CHARS.length;
+        
+        // Standard entropy calculation (ignores PREFIX for calculation)
+        const passwordLength = password.length - PREFIX.length;
+        const entropy = Math.round(passwordLength * (Math.log(charsetSize) / Math.log(2)));
+        
+        // Update entropy text
+        entropyText.textContent = `Entropy: ${entropy} bits`;
+        
+        // Determine strength level based on entropy
+        let strengthPercent = 0;
+        let strengthClass = '';
+        let strengthLabel = '';
+        
+        if (entropy < 40) {
+            strengthPercent = 33;
+            strengthClass = 'weak';
+            strengthLabel = 'Weak';
+        } else if (entropy < 60) {
+            strengthPercent = 66;
+            strengthClass = 'medium';
+            strengthLabel = 'Medium';
+        } else {
+            strengthPercent = 100;
+            strengthClass = 'strong';
+            strengthLabel = 'Strong';
+        }
+        
+        // Update strength meter
+        strengthMeter.style.width = `${strengthPercent}%`;
+        strengthMeter.className = 'strength-meter-fill ' + strengthClass;
+        strengthText.textContent = `Strength: ${strengthLabel}`;
+    }
+    
+    // Copy to clipboard
+    function copyToClipboard() {
+        // Get the key value without HTML tags
+        const key = keyDisplay.textContent;
+        
+        // Create a temporary text area to copy from
+        const textArea = document.createElement('textarea');
+        textArea.value = key;
+        textArea.style.position = 'fixed';  // Avoid scrolling to bottom
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            // Execute copy command
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showToast('success', 'Key copied to clipboard!');
+                copyTooltip.innerText = 'Copied!';
+                
+                // Reset tooltip text after 2 seconds
+                setTimeout(() => {
+                    copyTooltip.innerText = 'Copy to clipboard';
+                }, 2000);
+            } else {
+                showToast('error', 'Failed to copy key.');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to copy key: ' + err);
+        }
+        
+        // Clean up
+        document.body.removeChild(textArea);
+    }
+    
+    // Save key to localStorage
+    function saveKey() {
+        const key = keyDisplay.textContent;
+        const timestamp = new Date().toISOString();
+        const savedKey = {
+            key: key,
+            timestamp: timestamp,
+            id: Date.now().toString()
+        };
+        
+        // Add to saved keys array
+        savedKeys.unshift(savedKey);
+        
+        // Limit to 10 saved keys
+        if (savedKeys.length > 10) {
+            savedKeys.pop();
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('msangiSavedKeys', JSON.stringify(savedKeys));
+        
+        // Update UI
+        updateSavedKeysUI();
+        
+        // Show notification
+        showToast('success', 'Key saved successfully!');
+    }
+    
+    // Update saved keys UI
+    function updateSavedKeysUI() {
+        if (savedKeys.length > 0) {
+            // Show container
+            savedKeysContainer.classList.remove('d-none');
+            
+            // Clear current list
+            keyHistory.innerHTML = '';
+            
+            // Add saved keys to list
+            savedKeys.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div class="history-key" title="${item.key}">${item.key}</div>
+                    <div class="history-actions">
+                        <button class="btn btn-sm btn-outline-primary btn-icon" onclick="copySavedKey('${item.id}')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger btn-icon" onclick="deleteSavedKey('${item.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                keyHistory.appendChild(historyItem);
+            });
+        } else {
+            savedKeysContainer.classList.add('d-none');
+        }
+    }
+    
+    // Copy saved key
+    function copySavedKey(id) {
+        const savedKey = savedKeys.find(item => item.id === id);
+        if (savedKey) {
+            // Create a temporary text area to copy from
+            const textArea = document.createElement('textarea');
+            textArea.value = savedKey.key;
+            textArea.style.position = 'fixed';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('success', 'Saved key copied to clipboard!');
+                } else {
+                    showToast('error', 'Failed to copy saved key.');
+                }
+            } catch (err) {
+                showToast('error', 'Failed to copy saved key: ' + err);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+    }
+    
+    // Delete saved key
+    function deleteSavedKey(id) {
+        savedKeys = savedKeys.filter(item => item.id !== id);
+        localStorage.setItem('msangiSavedKeys', JSON.stringify(savedKeys));
+        updateSavedKeysUI();
+        showToast('info', 'Key deleted successfully');
+    }
+    
+    // Show toast notification
+    function showToast(type, message) {
+        // Set icon based on type
+        switch(type) {
+            case 'success':
+                toastIcon.className = 'fas fa-check-circle me-2 text-success';
+                break;
+            case 'error':
+                toastIcon.className = 'fas fa-times-circle me-2 text-danger';
+                break;
+            case 'warning':
+                toastIcon.className = 'fas fa-exclamation-triangle me-2 text-warning';
+                break;
+            case 'info':
+                toastIcon.className = 'fas fa-info-circle me-2 text-info';
+                break;
+            default:
+                toastIcon.className = 'fas fa-info-circle me-2';
+        }
+        
+        // Set message
+        toastMessage.textContent = message;
+        
+        // Show toast
+        toastNotification.classList.add('show');
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+            toastNotification.classList.remove('show');
+        }, 3000);
+    }
+    
+    // Initialize app on load
+    window.onload = init;
+    
+    // Make functions available to inline handlers
+    window.copySavedKey = copySavedKey;
+    window.deleteSavedKey = deleteSavedKey;
+</script>
+</body>
+</html>
